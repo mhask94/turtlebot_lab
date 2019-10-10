@@ -28,14 +28,12 @@ class ParticleFilter():
     def _low_var_resample(self):
         M_inv = 1/self.M
         r = rand(min_=0, max_=M_inv)
-        c = self.chi[-1][0]
-        i = 0
-        for m in range(self.M):
-            U = r + (m-1)*M_inv
-            while U > c:
-                i += 1
-                c += self.chi[-1][i]
-            self.chi[:3,m] = self.chi[:3,i]
+        c = np.cumsum(self.chi[-1])
+        U = np.arange(self.M)*M_inv + r
+        diff = c- U[:,None]
+        i = np.argmax(diff > 0, axis=1)
+
+        self.chi = self.chi[:,i]
 
     def predictionStep(self, u, dt): # u is np.array size 2x1
         # add noise to commanded inputs
