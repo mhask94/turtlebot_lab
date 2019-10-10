@@ -25,16 +25,9 @@ if __name__ == "__main__":
         if not mat_file[-4:] == '.mat':
             __error__("Invalid file type" + __usage__)
         if len(args) == 2:
-            animate = args[1]
+            animate = args[1][0] == 'T' or args[1][0] == 't'
     else:
         __error__("Too many arguments received" + __usage__)
-
-    print(animate)
-    if animate:
-        print('yes')
-    else:
-        print('no')
-    exit()
 
     data = loadmat(mat_file)
     landmarks = data['landmarks']
@@ -59,7 +52,7 @@ if __name__ == "__main__":
     sigma0 = pf.sigma
 
     viz = Visualizer(odom_t[0], pos_odom_se2[:,0], chi0, mu0, sigma0, landmarks, 
-            limits=lims, live=True)
+            limits=lims, live=animate)
 
     for i in range(len(odom_t)):
         if i == 0:
