@@ -47,6 +47,7 @@ class ParticleFilter():
         self.mu = wrap(np.mean(self.chi[:3], axis=1, keepdims=True), dim=2)
         mu_diff = wrap(self.chi[:3] - self.mu, dim=2)
         self.sigma = np.cov(mu_diff)
+        self.z_hat = np.ones((2,len(self.landmarks)))*50
 
     def _gauss_prob(self, diff, var):
         return np.exp(-diff**2/2/var) / np.sqrt(2*np.pi*var)
@@ -63,7 +64,7 @@ class ParticleFilter():
                 c += self.chi[-1][i]
             self.chi[:3,m] = self.chi[:3,i]
 
-    def predictionStep(self, u): # u is np.array size 2x1
+    def predictionStep(self, u, dt): # u is np.array size 2x1
         # add noise to commanded inputs
         u_noisy = np.zeros((len(u), self.M))
         vsig = np.sqrt(self.a1*u[0]**2 + self.a2*u[1]**2)
@@ -71,22 +72,21 @@ class ParticleFilter():
         u_noisy[0] = u[0] + vsig*randn(self.M)
         u_noisy[1] = u[1] + wsig*randn(self.M)
         # propagate dynamics through motion model
-        self.chi[:3] = self.g(u_noisy, self.chi[:3])
+        self.chi[:3] = self.g(u_noisy, self.chi[:3], dt)
         # update mu
         self.mu = np.mean(self.chi[:3], axis=1, keepdims=True)
 
-        return self.mu 
-
     def correctionStep(self, z):
-        z_hat = np.zeros((2,len(self.landmarks))) 
         self.chi[-1] = 1
         for i, (mx,my) in enumerate(self.landmarks):
             Zi = self.h(self.chi[:3], mx, my)
+            if np.isnan(z[0,i]):
+                continue
             diff = wrap(Zi - z[:,i:i+1], dim=1)
             z_prob = np.prod(self._gauss_prob(diff, 2*self.Q), axis=0)
             z_prob /= np.sum(z_prob)
             self.chi[-1] *= z_prob
-            z_hat[:,i] = np.sum(z_prob * Zi, axis=1)
+            self.z_hat[:,i] = np.sum(z_prob * Zi, axis=1)
 
         self.chi[-1] /= np.sum(self.chi[-1])
         self._low_var_resample()
@@ -94,8 +94,6 @@ class ParticleFilter():
         self.mu = wrap(np.mean(self.chi[:3], axis=1, keepdims=True), dim=2)
         mu_diff = wrap(self.chi[:3] - self.mu, dim=2)
         self.sigma = np.cov(mu_diff)
-
-        return self.chi, self.mu, self.sigma, z_hat
 
 if __name__ == "__main__":
     data = loadmat('processed_data.mat')
@@ -128,14 +126,15 @@ if __name__ == "__main__":
             continue # skip first step because visualizer already has data
 
         t = odom_t[i]
+        dt = t - odom_t[i-1]
         u_c = vel_odom[:,i:i+1]
 
         x, z, got_meas = turtlebot.step(t)
 
-        mu_bar = pf.predictionStep(u_c)
+        pf.predictionStep(u_c, dt)
         if got_meas:
-            particles, mu, sigma, zhat = pf.correctionStep(z)
+            pf.correctionStep(z)
 
-        viz.update(t, x, [], mu0, sigma0, z)
+        viz.update(t, x, pf.chi, pf.mu, pf.sigma, pf.z_hat, got_meas)
 
 viz.plotHistory()

@@ -10,23 +10,8 @@ class Visualizer:
     def __init__(self, t0, x0, particles, xhat0, sigma0, landmarks=np.empty(0),
             limits=[-10,10,-10,10], live=True):
         self.time_hist = [t0]
-        plt.rcParams["figure.figsize"] = (9,7)
-        self.fig, self.ax = plt.subplots()
-        self.ax.axis(limits)
-        self.ax.set_title('Turtlebot Simulation')
-        self.ax.set_xlabel('X (m)')
-        self.ax.set_ylabel('Y (m)')
+
         x,y,theta = x0.flatten()
-        self.R = 0.5
-        self.circ = Circle((x,y), radius=self.R, color='y', ec='k')
-        self.ax.add_patch(self.circ)
-        xdata = [x, x + self.R*np.cos(theta)]
-        ydata = [y, y + self.R*np.sin(theta)]
-        self.line, = self.ax.plot(xdata, ydata, 'k')
-
-        if landmarks.size > 1:
-            self.ax.plot(landmarks[:,0], landmarks[:,1], 'kx', label='landmark')
-
         self.x_hist = [x]
         self.y_hist = [y]
         self.theta_hist = [theta]
@@ -45,24 +30,36 @@ class Visualizer:
 
         self.live = live
         if self.live:
+            plt.rcParams["figure.figsize"] = (9,7)
+            self.fig, self.ax = plt.subplots()
+            self.ax.axis(limits)
+            self.ax.set_title('Turtlebot Simulation')
+            self.ax.set_xlabel('X (m)')
+            self.ax.set_ylabel('Y (m)')
+            self.R = 0.5
+            self.circ = Circle((x,y), radius=self.R, color='y', ec='k')
+            self.ax.add_patch(self.circ)
+            xdata = [x, x + self.R*np.cos(theta)]
+            ydata = [y, y + self.R*np.sin(theta)]
+            self.line, = self.ax.plot(xdata, ydata, 'k')
+            self.ax.plot(landmarks[:,0], landmarks[:,1], 'kx', label='landmark')
+
 #            self.true_dots, = self.ax.plot(self.x_hist,self.y_hist, 'b.',
-#                    markersize=3, label='truth')
+#                    markersize=2, label='truth')
 #            self.est_dots, = self.ax.plot(self.xhat_hist,self.yhat_hist, 'r.',
-#                    markersize=3, label='estimates')
+#                    markersize=2, label='estimates')
+
             self.est_lms, = self.ax.plot(20,20, 'rx', label='est landmark')
-#            self.particle_dots, = self.ax.plot(particles[0],particles[1], 'r.',
-#                    markersize=2, label='particles')
+            self.particle_dots, = self.ax.plot(particles[0],particles[1], 'g.',
+                    markersize=2, label='particles')
 
         self.ax.legend()
         self._display()
 
-    def update(self, t, true_pose, particles, est_pose, covariance, zhat):
+    def update(self, t, true_pose, particles, est_pose, covariance, zhat, gotz):
         self.time_hist.append(t)
-        x,y,theta = true_pose.flatten()
-        self.circ.set_center((x,y))
-        self.line.set_xdata([x, x + self.R*np.cos(theta)])
-        self.line.set_ydata([y, y + self.R*np.sin(theta)])
 
+        x,y,theta = true_pose.flatten()
         self.x_hist.append(x)
         self.y_hist.append(y)
         self.theta_hist.append(theta)
@@ -79,21 +76,27 @@ class Visualizer:
         self.y2sig_hist.append(2*np.sqrt(covariance[1,1].item()))
         self.theta2sig_hist.append(2*np.sqrt(covariance[2,2].item()))
 
-#        if self.live:
+        if self.live:
+            self.circ.set_center((x,y))
+            self.line.set_xdata([x, x + self.R*np.cos(theta)])
+            self.line.set_ydata([y, y + self.R*np.sin(theta)])
+
 #            self.true_dots.set_xdata(self.x_hist)
 #            self.true_dots.set_ydata(self.y_hist)
 #            self.est_dots.set_xdata(self.xhat_hist)
 #            self.est_dots.set_ydata(self.yhat_hist)
-#            self.particle_dots.set_xdata(particles[0])
-#            self.particle_dots.set_ydata(particles[1])
 
-#            est_lms = np.zeros(zhat.shape)
-#            for i, (r,phi) in enumerate(zhat.T):
-#                xi = est_pose.item(0) + r*np.cos(phi+theta)
-#                yi = est_pose.item(1) + r*np.sin(phi+theta)
-#                est_lms[:,i] = np.array([xi,yi])
-#            self.est_lms.set_xdata(est_lms[0,:])
-#            self.est_lms.set_ydata(est_lms[1,:])
+            self.particle_dots.set_xdata(particles[0])
+            self.particle_dots.set_ydata(particles[1])
+
+            if gotz:
+                est_lms = np.zeros(zhat.shape)
+                for i, (r,phi) in enumerate(zhat.T):
+                    xi = est_pose.item(0) + r*np.cos(phi+theta)
+                    yi = est_pose.item(1) + r*np.sin(phi+theta)
+                    est_lms[:,i] = np.array([xi,yi])
+                self.est_lms.set_xdata(est_lms[0,:])
+                self.est_lms.set_ydata(est_lms[1,:])
         
         self._display()
 
