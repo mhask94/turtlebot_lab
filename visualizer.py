@@ -54,6 +54,7 @@ class Visualizer:
 
         self.ax.legend()
         self._display()
+        input('Press ENTER to start...')
 
     def update(self, t, true_pose, particles, est_pose, covariance, zhat, gotz):
         self.time_hist.append(t)
