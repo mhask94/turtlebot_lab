@@ -12,9 +12,9 @@ class ParticleFilter():
         self.h = MeasurementModel()
 
         self.chi = np.empty((4,num_particles))
-        self.chi[0] = rand(self.chi[0].shape, limits[0], limits[1])
-        self.chi[1] = rand(self.chi[1].shape, limits[2], limits[3])
-        self.chi[2] = rand(self.chi[2].shape, -np.pi, np.pi)
+        self.chi[0] = np.random.uniform(limits[0], limits[1], self.chi[0].shape)
+        self.chi[1] = np.random.uniform(limits[2], limits[3], self.chi[1].shape)
+        self.chi[2] = np.random.uniform(-np.pi, np.pi, self.chi[2].shape)
         self.chi[3] = 1 / num_particles
         self.mu = wrap(np.mean(self.chi[:3], axis=1, keepdims=True), dim=2)
         mu_diff = wrap(self.chi[:3] - self.mu, dim=2)
@@ -26,7 +26,7 @@ class ParticleFilter():
 
     def _low_var_resample(self):
         M_inv = 1/self.M
-        r = rand(min_=0, max_=M_inv)
+        r = np.random.uniform(low=0, high=M_inv)
         c = np.cumsum(self.chi[-1])
         U = np.arange(self.M)*M_inv + r
         diff = c- U[:,None]

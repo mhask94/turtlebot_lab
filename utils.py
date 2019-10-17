@@ -8,9 +8,6 @@ def wrap(angle, dim=None):
         angle -= 2*np.pi * np.floor((angle + np.pi) / (2*np.pi))
     return angle
 
-def rand(size=(), min_=0, max_=1):
-    return min_ + np.random.rand(*size)*(max_ - min_)
-
 
 class MotionModel():
     def __init__(self, alphas, noise=True):
@@ -59,4 +56,5 @@ class MeasurementModel():
         x_diff, y_diff = mx - states[0], my - states[1]
         r = np.sqrt(x_diff**2 + y_diff**2)
         phi = np.arctan2(y_diff, x_diff) - states[2]
-        return np.block([[r], [phi]])
+        return np.block([[r], [wrap(phi)]])
+
