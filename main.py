@@ -106,6 +106,6 @@ if __name__ == "__main__":
             if got_meas:
                 pf.correctionStep(z)
 
-        viz.update(t, x, pf.chi, pf.mu, pf.sigma, pf.z_hat, got_meas)
+        viz.update(t, x, pf.chi, pf.mu, pf.sigma, pf.z, got_meas)
 
 viz.plotHistory()

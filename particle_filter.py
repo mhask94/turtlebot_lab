@@ -3,7 +3,7 @@ from numpy.random import randn
 from utils import wrap, MotionModel, MeasurementModel
 
 class ParticleFilter():
-    def __init__(self, alphas, Q, num_particles=1000, limits=[-10, 10, -10, 10],
+    def __init__(self, alphas, Q, num_particles=1000, limits=[-5, 5, -5, 5],
         landmarks=np.empty(0)):
         self.Q = Q.diagonal().reshape((len(Q), 1))
         self.M = num_particles

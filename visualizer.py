@@ -7,7 +7,7 @@ from utils import wrap
 
 class Visualizer:
     def __init__(self, t0, x0, particles, xhat0, sigma0, landmarks=np.empty(0),
-            limits=[-10, 10, -10, 10], live=True):
+            limits=[-5, 5, -5, 5], live=True):
         self.time_hist = [t0]
 
         x, y, theta = x0.flatten()
