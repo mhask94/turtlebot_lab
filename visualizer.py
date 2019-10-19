@@ -10,7 +10,7 @@ class Visualizer:
             limits=[-10, 10, -10, 10], live=True):
         self.time_hist = [t0]
 
-        x,y,theta = x0.flatten()
+        x, y, theta = x0.flatten()
         self.x_hist = [x]
         self.y_hist = [y]
         self.theta_hist = [theta]
@@ -36,7 +36,7 @@ class Visualizer:
             self.ax.set_xlabel('X (m)')
             self.ax.set_ylabel('Y (m)')
             self.R = 0.5
-            self.circ = Circle((x,y), radius=self.R, color='y', ec='k')
+            self.circ = Circle((x, y), radius=self.R, color='y', ec='k')
             self.ax.add_patch(self.circ)
             xdata = [x, x + self.R*np.cos(theta)]
             ydata = [y, y + self.R*np.sin(theta)]
@@ -49,17 +49,17 @@ class Visualizer:
 #                    markersize=2, label='estimates')
 
             self.est_lms, = self.ax.plot(20, 20, 'rx', label='est landmark')
-            self.particle_dots, = self.ax.plot(particles[0],particles[1], 'g.',
+            self.particle_dots, = self.ax.plot(particles[0], particles[1], 'g.',
                     markersize=2, label='particles')
 
         self.ax.legend()
         self._display()
         input('Press ENTER to start...')
 
-    def update(self, t, true_pose, particles, est_pose, covariance, zhat, gotz):
+    def update(self, t, true_pose, particles, est_pose, covariance, z, gotz):
         self.time_hist.append(t)
 
-        x,y,theta = true_pose.flatten()
+        x, y, theta = true_pose.flatten()
         self.x_hist.append(x)
         self.y_hist.append(y)
         self.theta_hist.append(theta)
@@ -90,10 +90,10 @@ class Visualizer:
             self.particle_dots.set_ydata(particles[1])
 
             if gotz:
-                est_lms = np.zeros(zhat.shape)
-                for i, (r, phi) in enumerate(zhat.T):
-                    xi = est_pose.item(0) + r*np.cos(phi+theta)
-                    yi = est_pose.item(1) + r*np.sin(phi+theta)
+                est_lms = np.zeros(z.shape)
+                for i, (r, phi) in enumerate(z.T):
+                    xi = est_pose.item(0) + r*np.cos(phi+est_pose.item(2))
+                    yi = est_pose.item(1) + r*np.sin(phi+est_pose.item(2))
                     est_lms[:, i] = np.array([xi, yi])
                 self.est_lms.set_xdata(est_lms[0, :])
                 self.est_lms.set_ydata(est_lms[1, :])
@@ -108,7 +108,7 @@ class Visualizer:
                     markersize=3, label='estimates')
 
         plt.rcParams["figure.figsize"] = (8,8)
-        fig2, axes2 = plt.subplots(3,1, sharex=True)
+        fig2, axes2 = plt.subplots(3, 1, sharex=True)
         axes2[0].plot(self.time_hist, self.x_hist, 'b', label='truth')
         axes2[0].plot(self.time_hist, self.xhat_hist, 'r', label='est')
         axes2[0].set_ylabel('X (m)')

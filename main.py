@@ -49,6 +49,25 @@ if __name__ == "__main__":
     x_truth = truth_data['x_truth']
     y_truth = truth_data['y_truth']
 
+    # Cut down truth data to align with odom time
+    i = 0
+    j = 0
+    while i < len(odom_t):
+        if t_truth[i] < odom_t[j]:
+            t_truth = np.delete(t_truth, i)
+            th_truth = np.delete(th_truth, i)
+            x_truth = np.delete(x_truth, i)
+            y_truth = np.delete(y_truth, i)
+        else:
+            j += 1
+            i += 1
+    if len(odom_t) < len(t_truth):
+        t_truth = np.delete(t_truth, -1)
+        th_truth = np.delete(th_truth, -1)
+        x_truth = np.delete(x_truth, -1)
+        y_truth = np.delete(y_truth, -1)
+
+
     pos_truth_se2 = np.vstack((x_truth.flatten(), y_truth.flatten(), th_truth.flatten()))
 
     del data, truth_data
@@ -56,7 +75,7 @@ if __name__ == "__main__":
     alphas = np.array([0.1, 0.01, 0.01, 0.1])
     Q = np.diag([0.1, 0.05])**2
 
-    turtlebot = Turtlebot(pos_odom_se2, l_depth, l_bearing, l_time)
+    turtlebot = Turtlebot(pos_truth_se2, l_depth, l_bearing, l_time)
     
     lims = [-5, 5, -5, 5]
     M = 1000
@@ -79,8 +98,13 @@ if __name__ == "__main__":
         x, z, got_meas = turtlebot.step(t)
 
         pf.predictionStep(u_c, dt)
-        if got_meas:
-            pf.correctionStep(z)
+
+        # skip measurement updates when no commands given to wheels to avoid false convergence
+        if all(i == 0 for i in u_c):
+            continue
+        else:
+            if got_meas:
+                pf.correctionStep(z)
 
         viz.update(t, x, pf.chi, pf.mu, pf.sigma, pf.z_hat, got_meas)
 

@@ -20,6 +20,7 @@ class ParticleFilter():
         mu_diff = wrap(self.chi[:3] - self.mu, dim=2)
         self.sigma = np.cov(mu_diff)
         self.z_hat = np.ones((2, len(self.landmarks)))*50
+        self.z = np.ones((2, len(self.landmarks)))*50
         self.n = 3
 
     def _gauss_prob(self, diff, var):
@@ -59,6 +60,7 @@ class ParticleFilter():
             z_prob /= np.sum(z_prob)
             self.chi[-1] *= z_prob
             self.z_hat[:, i] = np.sum(z_prob * Zi, axis=1)
+            self.z[:, i] = z[:, i]
 
         self.chi[-1] /= np.sum(self.chi[-1])
         self._low_var_resample()
