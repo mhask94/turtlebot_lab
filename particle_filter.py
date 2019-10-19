@@ -20,6 +20,7 @@ class ParticleFilter():
         mu_diff = wrap(self.chi[:3] - self.mu, dim=2)
         self.sigma = np.cov(mu_diff)
         self.z_hat = np.ones((2, len(self.landmarks)))*50
+        self.n = 3
 
     def _gauss_prob(self, diff, var):
         return np.exp(-diff**2/2/var) / np.sqrt(2*np.pi*var)
@@ -33,6 +34,13 @@ class ParticleFilter():
         i = np.argmax(diff > 0, axis=1)
 
         self.chi = self.chi[:, i]
+
+        uniq = len(np.unique(self.chi))
+
+        # introduce synthetic noise if convergence is too fast
+        if uniq / self.M < 0.5:
+            Q = self.sigma / ((self.M * uniq) ** (1 / self.n))
+            self.chi[0:3, :] = self.chi[0:3, :] + Q @ np.random.randn(np.shape(self.chi[0:3, :])[0], np.shape(self.chi[0:3, :])[1])
 
     def predictionStep(self, u, dt):  # u is np.array size 2x1
         # propagate dynamics through motion model
