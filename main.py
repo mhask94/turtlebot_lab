@@ -61,12 +61,11 @@ if __name__ == "__main__":
         else:
             j += 1
             i += 1
-    if len(odom_t) < len(t_truth):
+    if len(odom_t) < len(t_truth):  # remove extra truth indices for plotting
         t_truth = np.delete(t_truth, -1)
         th_truth = np.delete(th_truth, -1)
         x_truth = np.delete(x_truth, -1)
         y_truth = np.delete(y_truth, -1)
-
 
     pos_truth_se2 = np.vstack((x_truth.flatten(), y_truth.flatten(), th_truth.flatten()))
 

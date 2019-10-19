@@ -19,8 +19,9 @@ class ParticleFilter():
         self.mu = wrap(np.mean(self.chi[:3], axis=1, keepdims=True), dim=2)
         mu_diff = wrap(self.chi[:3] - self.mu, dim=2)
         self.sigma = np.cov(mu_diff)
-        self.z_hat = np.ones((2, len(self.landmarks)))*50
-        self.z = np.ones((2, len(self.landmarks)))*50
+        self.z_nan = 50
+        self.z_hat = np.ones((2, len(self.landmarks)))*self.z_nan
+        self.z = np.ones((2, len(self.landmarks)))*self.z_nan
         self.n = 3
 
     def _gauss_prob(self, diff, var):
@@ -51,6 +52,7 @@ class ParticleFilter():
 
     def correctionStep(self, z):
         self.chi[-1] = 1
+        self.z = np.ones((2, len(self.landmarks))) * self.z_nan
         for i, (mx, my) in enumerate(self.landmarks):
             Zi = self.h(self.chi[:3], mx, my)
             if np.isnan(z[0, i]):
