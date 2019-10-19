@@ -7,7 +7,7 @@ from utils import wrap
 
 class Visualizer:
     def __init__(self, t0, x0, particles, xhat0, sigma0, landmarks=np.empty(0),
-            limits=[-10,10,-10,10], live=True):
+            limits=[-10, 10, -10, 10], live=True):
         self.time_hist = [t0]
 
         x,y,theta = x0.flatten()
@@ -23,13 +23,13 @@ class Visualizer:
         self.yerr_hist = [y - xhat0.item(1)]
         self.thetaerr_hist = [wrap(theta - xhat0.item(2))]
 
-        self.x2sig_hist = [2*np.sqrt(sigma0[0,0].item())]
-        self.y2sig_hist = [2*np.sqrt(sigma0[1,1].item())]
-        self.theta2sig_hist = [2*np.sqrt(sigma0[2,2].item())]
+        self.x2sig_hist = [2*np.sqrt(sigma0[0, 0].item())]
+        self.y2sig_hist = [2*np.sqrt(sigma0[1, 1].item())]
+        self.theta2sig_hist = [2*np.sqrt(sigma0[2, 2].item())]
 
         self.live = live
         if self.live:
-            plt.rcParams["figure.figsize"] = (9,7)
+            plt.rcParams["figure.figsize"] = (9, 7)
             self.fig, self.ax = plt.subplots()
             self.ax.axis(limits)
             self.ax.set_title('Turtlebot Simulation')
@@ -41,14 +41,14 @@ class Visualizer:
             xdata = [x, x + self.R*np.cos(theta)]
             ydata = [y, y + self.R*np.sin(theta)]
             self.line, = self.ax.plot(xdata, ydata, 'k')
-            self.ax.plot(landmarks[:,0], landmarks[:,1], 'kx', label='landmark')
+            self.ax.plot(landmarks[:, 0], landmarks[:, 1], 'kx', label='landmark')
 
 #            self.true_dots, = self.ax.plot(self.x_hist,self.y_hist, 'b.',
 #                    markersize=2, label='truth')
 #            self.est_dots, = self.ax.plot(self.xhat_hist,self.yhat_hist, 'r.',
 #                    markersize=2, label='estimates')
 
-            self.est_lms, = self.ax.plot(20,20, 'rx', label='est landmark')
+            self.est_lms, = self.ax.plot(20, 20, 'rx', label='est landmark')
             self.particle_dots, = self.ax.plot(particles[0],particles[1], 'g.',
                     markersize=2, label='particles')
 
@@ -72,12 +72,12 @@ class Visualizer:
         self.yerr_hist.append(y - est_pose.item(1))
         self.thetaerr_hist.append(wrap(theta - est_pose.item(2)))
 
-        self.x2sig_hist.append(2*np.sqrt(covariance[0,0].item()))
-        self.y2sig_hist.append(2*np.sqrt(covariance[1,1].item()))
-        self.theta2sig_hist.append(2*np.sqrt(covariance[2,2].item()))
+        self.x2sig_hist.append(2*np.sqrt(covariance[0, 0].item()))
+        self.y2sig_hist.append(2*np.sqrt(covariance[1, 1].item()))
+        self.theta2sig_hist.append(2*np.sqrt(covariance[2, 2].item()))
 
         if self.live:
-            self.circ.set_center((x,y))
+            self.circ.set_center((x, y))
             self.line.set_xdata([x, x + self.R*np.cos(theta)])
             self.line.set_ydata([y, y + self.R*np.sin(theta)])
 
@@ -91,20 +91,20 @@ class Visualizer:
 
             if gotz:
                 est_lms = np.zeros(zhat.shape)
-                for i, (r,phi) in enumerate(zhat.T):
+                for i, (r, phi) in enumerate(zhat.T):
                     xi = est_pose.item(0) + r*np.cos(phi+theta)
                     yi = est_pose.item(1) + r*np.sin(phi+theta)
-                    est_lms[:,i] = np.array([xi,yi])
-                self.est_lms.set_xdata(est_lms[0,:])
-                self.est_lms.set_ydata(est_lms[1,:])
+                    est_lms[:, i] = np.array([xi, yi])
+                self.est_lms.set_xdata(est_lms[0, :])
+                self.est_lms.set_ydata(est_lms[1, :])
         
         self._display()
 
     def plotHistory(self):
         if not self.live:
-            self.true_dots, = self.ax.plot(self.x_hist,self.y_hist, 'b.',
+            self.true_dots, = self.ax.plot(self.x_hist, self.y_hist, 'b.',
                     markersize=3, label='truth')
-            self.est_dots, = self.ax.plot(self.xhat_hist,self.yhat_hist, 'r.',
+            self.est_dots, = self.ax.plot(self.xhat_hist, self.yhat_hist, 'r.',
                     markersize=3, label='estimates')
 
         plt.rcParams["figure.figsize"] = (8,8)
@@ -129,7 +129,7 @@ class Visualizer:
         self.x2sig_hist = np.array(self.x2sig_hist)
         self.y2sig_hist = np.array(self.y2sig_hist)
         self.theta2sig_hist = np.array(self.theta2sig_hist)
-        fig3, axes3 = plt.subplots(3,1, sharex=True)
+        fig3, axes3 = plt.subplots(3, 1, sharex=True)
         axes3[0].plot(self.time_hist, self.xerr_hist, 'b', label='error')
         axes3[0].plot(self.time_hist, self.x2sig_hist, 'r', label='2$\sigma$')
         axes3[0].plot(self.time_hist, -self.x2sig_hist, 'r')
@@ -144,7 +144,7 @@ class Visualizer:
         axes3[1].legend()
 
         axes3[2].plot(self.time_hist, self.thetaerr_hist, 'b', label='error')
-        axes3[2].plot(self.time_hist, self.theta2sig_hist,'r',label='2$\sigma$')
+        axes3[2].plot(self.time_hist, self.theta2sig_hist, 'r', label='2$\sigma$')
         axes3[2].plot(self.time_hist, -self.theta2sig_hist, 'r')
         axes3[2].set_ylabel('Theta Error (rad)')
         axes3[2].set_xlabel('Time (s)')
