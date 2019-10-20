@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     del data, truth_data
 
-    alphas = np.array([0.1, 0.01, 0.01, 0.1])
+    alphas = np.array([0.1, 0.01, 0.01, 0.1])*10
     Q = np.diag([0.1, 0.05])**2
 
     turtlebot = Turtlebot(pos_truth_se2, l_depth, l_bearing, l_time)
