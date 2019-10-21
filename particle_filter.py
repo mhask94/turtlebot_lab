@@ -52,6 +52,7 @@ class ParticleFilter():
         self.chi[:3] = self.g(u, self.chi[:3], dt)
         # update mu
         self.mu = np.mean(self.chi[:3], axis=1, keepdims=True)
+        self.mu[2] = wrap(self.mu[2])
 
     def correctionStep(self, z):
         self.chi[-1] = 1

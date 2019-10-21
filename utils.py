@@ -39,7 +39,7 @@ class MotionModel():
         x = np.zeros(x_m1.shape)
         x[0][n0] = x_m1[0][n0] + temp*(np.sin(theta+w_dt[n0])-np.sin(theta))
         x[1][n0] = x_m1[1][n0] + temp*(np.cos(theta)-np.cos(theta+w_dt[n0]))
-        x[2] = wrap(x_m1[2] + w_dt + gamma_dt)
+        x[2] = x_m1[2] + w_dt + gamma_dt
 
         if len(n0) != len(u_noisy[1]): 
             y0, = np.where(u_noisy[1] == 0) # zero indices of omega
