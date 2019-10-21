@@ -7,17 +7,19 @@ class Turtlebot():
         self.z_idx = 0
 
     def step(self, t):
-        x = self.x[:,self.x_idx:self.x_idx+1]
+        x = self.x[:, self.x_idx:self.x_idx+1]
         self.x_idx += 1
 
         meas_update = False
         z = None
-        if t >= self.z_t[self.z_idx]:
-            meas_update = True
-            r = self.r[:,self.z_idx]
-            phi = self.phi[:,self.z_idx]
-            z = np.block([[r], [phi]])
-            if self.z_idx < len(self.r):
-                self.z_idx += 1
+        while self.z_t[self.z_idx + 1] < t:
+            self.z_idx += 1
+
+        meas_update = True
+        r = self.r[:, self.z_idx]
+        phi = self.phi[:, self.z_idx]
+        z = np.block([[r], [phi]])
+        if self.z_idx < len(self.r):
+            self.z_idx += 1
 
         return x, z, meas_update

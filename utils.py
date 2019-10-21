@@ -1,5 +1,6 @@
 import numpy as np
-from numpy.random import randn as randn
+from numpy.random import randn
+
 
 def wrap(angle, dim=None):
     if dim:
