@@ -6,6 +6,7 @@ from scipy.io import loadmat
 from visualizer import Visualizer
 from turtlebot import Turtlebot
 from particle_filter import ParticleFilter
+from utils import wrap
 
 __usage__ = '\nUsage:\tpython3 main.py <filename>.mat [True/False->animate]'
 
@@ -67,7 +68,7 @@ if __name__ == "__main__":
         x_truth = np.delete(x_truth, -1)
         y_truth = np.delete(y_truth, -1)
 
-    pos_truth_se2 = np.vstack((x_truth.flatten(), y_truth.flatten(), th_truth.flatten()))
+    pos_truth_se2 = np.vstack((x_truth.flatten(), y_truth.flatten(), wrap(th_truth.flatten())))
 
     del data, truth_data
 
