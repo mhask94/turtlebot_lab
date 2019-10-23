@@ -35,7 +35,7 @@ class Visualizer:
             self.ax.set_title('Turtlebot Simulation')
             self.ax.set_xlabel('X (m)')
             self.ax.set_ylabel('Y (m)')
-            self.R = 0.5
+            self.R = 0.2
             self.circ = Circle((x, y), radius=self.R, color='y', ec='k')
             self.ax.add_patch(self.circ)
             xdata = [x, x + self.R*np.cos(theta)]
@@ -54,7 +54,6 @@ class Visualizer:
 
         self.ax.legend()
         self._display()
-        input('Press ENTER to start...')
 
     def update(self, t, true_pose, particles, est_pose, covariance, z, gotz):
         self.time_hist.append(t)
@@ -150,8 +149,7 @@ class Visualizer:
         axes3[2].set_xlabel('Time (s)')
         axes3[2].legend()
 
-        self._display()
-        input('Press ENTER to close...')
+        plt.show()
 
     def _display(self):
         plt.pause(0.000001)
