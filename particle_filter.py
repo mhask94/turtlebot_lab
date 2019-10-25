@@ -32,23 +32,27 @@ class ParticleFilter():
         r = np.random.uniform(low=0, high=M_inv)
         c = np.cumsum(self.chi[-1])
         U = np.arange(self.M)*M_inv + r
-        diff = c - U[:, None]
+        diff = c - U[:,None]
         i = np.argmax(diff > 0, axis=1)
 
-        self.chi = self.chi[:, i]
+        n = 3 # num states
 
-        uniq = len(np.unique(self.chi))
+        P = np.cov(self.chi[:n])
+        self.chi = self.chi[:,i]
 
-        # introduce synthetic noise if convergence is too fast
-        if uniq / self.M < 0.5:
-            Q = self.sigma / ((self.M * uniq) ** (1 / self.n))
-            self.chi[0:3, :] = self.chi[0:3, :] + Q @ np.random.randn(np.shape(self.chi[0:3, :])[0], np.shape(self.chi[0:3, :])[1])
-
+        uniq = np.unique(i).size
+        if uniq*M_inv < 0.1:
+            Q = P / ((self.M*uniq)**(1/n))
+            noise = Q @ randn(*self.chi[:n].shape)
+            self.chi[:n] = wrap(self.chi[:n] + noise, dim=2)
+        self.chi[-1] = M_inv
+        
     def predictionStep(self, u, dt):  # u is np.array size 2x1
         # propagate dynamics through motion model
         self.chi[:3] = self.g(u, self.chi[:3], dt)
         # update mu
         self.mu = np.mean(self.chi[:3], axis=1, keepdims=True)
+        self.mu[2] = wrap(self.mu[2])
 
     def correctionStep(self, z):
         self.chi[-1] = 1
