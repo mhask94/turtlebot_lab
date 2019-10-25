@@ -10,7 +10,6 @@ class Turtlebot():
         x = self.x[:, self.x_idx:self.x_idx+1]
         self.x_idx += 1
 
-        meas_update = False
         z = None
         while self.z_t[self.z_idx + 1] < t:
             self.z_idx += 1
@@ -21,5 +20,7 @@ class Turtlebot():
         z = np.block([[r], [phi]])
         if self.z_idx < len(self.r):
             self.z_idx += 1
+        if np.sum(np.isnan(r)) > 8:
+            meas_update = False
 
         return x, z, meas_update

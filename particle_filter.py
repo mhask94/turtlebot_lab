@@ -35,30 +35,37 @@ class ParticleFilter():
         diff = c - U[:,None]
         i = np.argmax(diff > 0, axis=1)
 
-        n = 3 # num states
+#        n = 3 # num states
 
-        P = np.cov(self.chi[:n])
+        P = np.cov(self.chi[:self.n])
         self.chi = self.chi[:,i]
 
         uniq = np.unique(i).size
         if uniq*M_inv < 0.1:
-            Q = P / ((self.M*uniq)**(1/n))
-            noise = Q @ randn(*self.chi[:n].shape)
-            self.chi[:n] = wrap(self.chi[:n] + noise, dim=2)
+            Q = P / ((self.M*uniq)**(1/self.n))
+            noise = Q @ randn(*self.chi[:self.n].shape)
+            self.chi[:self.n] = wrap(self.chi[:self.n] + noise, dim=2)
         self.chi[-1] = M_inv
         
     def predictionStep(self, u, dt):  # u is np.array size 2x1
         # propagate dynamics through motion model
-        self.chi[:3] = self.g(u, self.chi[:3], dt)
+        self.chi[:self.n] = self.g(u, self.chi[:self.n], dt)
         # update mu
-        self.mu = np.mean(self.chi[:3], axis=1, keepdims=True)
+        self.mu = np.mean(self.chi[:self.n], axis=1, keepdims=True)
         self.mu[2] = wrap(self.mu[2])
 
-    def correctionStep(self, z):
+    def correctionStep(self, z, got_meas):
+        if not got_meas:
+            Q_sqrt = np.diag([0.01, 0.01, 0.001])
+            noise = Q_sqrt @ randn(*self.chi[:self.n].shape)
+            self.chi[:self.n] = wrap(self.chi[:self.n] + noise, dim=2)
+            self.sigma = np.cov(self.chi[:self.n])
+#            return
+
         self.chi[-1] = 1
         self.z = np.ones((2, len(self.landmarks))) * self.z_nan
         for i, (mx, my) in enumerate(self.landmarks):
-            Zi = self.h(self.chi[:3], mx, my)
+            Zi = self.h(self.chi[:self.n], mx, my)
             if np.isnan(z[0, i]):
                 continue
             diff = wrap(Zi - z[:, i:i+1], dim=1)
@@ -71,6 +78,7 @@ class ParticleFilter():
         self.chi[-1] /= np.sum(self.chi[-1])
         self._low_var_resample()
 
-        self.mu = wrap(np.mean(self.chi[:3], axis=1, keepdims=True), dim=2)
-        mu_diff = wrap(self.chi[:3] - self.mu, dim=2)
+        self.mu = wrap(np.mean(self.chi[:self.n], axis=1, keepdims=True), dim=2)
+        mu_diff = wrap(self.chi[:self.n] - self.mu, dim=2)
         self.sigma = np.cov(mu_diff)
+

@@ -105,8 +105,8 @@ if __name__ == "__main__":
         if all(i == 0 for i in u_c):
             continue
         else:
-            if got_meas:
-                pf.correctionStep(z)
+#        if got_meas:
+            pf.correctionStep(z, got_meas)
 
         viz.update(t, x, pf.chi, pf.mu, pf.sigma, pf.z, got_meas)
 
